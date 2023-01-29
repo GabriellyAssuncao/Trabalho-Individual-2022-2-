@@ -4,27 +4,39 @@
     application:
       image: python:latest
       container_name: application
-      restart: always
+      # restart: always
       build: .
       command: python src/main.py
       volumes:
         - .:/app  
       ports: 
-        - "3000:3000"
+        - "8080:8080"
       depends_on:
         - mongo-database
 
     mongo-database:
-      image: mongo
+      image: mongo:3.2
       container_name: mongo-db
       restart: always 
       environment:
         MONGO_INITDB_ROOT_USERNAME: lappis
         MONGO_INITDB_ROOT_PASSWORD: lappis
-      ports: 
+      ports:
         - "27017:27017"
       volumes:
-        - mongo-data:/data/db
+        - ./data/mongodb:/data/db    
 
-  volumes: 
-    mongo-data:
+    metabase:
+      image: metabase/metabase
+      environment:
+          - MB_DB_DBNAME=metabase
+          - MB_DB_PORT=27017
+          - MB_DB_USER=lappis
+          - MB_DB_PASS=lappis
+          - MB_DB_FILE=/metabase-data/metabase.db
+      volumes:
+        - ./data/metabase:/metabase-data
+      depends_on:
+        - mongo-database
+      ports:
+        - "3000:3000"
